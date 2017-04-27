@@ -309,7 +309,15 @@ func (w *WebSocketService) ConnectPrivate(ch chan TermData) {
 					dataTerm := data[1].(string)
 					var dataList []interface{}
 					if len(data) >= 3 {
-						dataList = data[2].([]interface{})
+						var ok bool
+						dataList, ok = data[2].([]interface{})
+						if !ok {
+							ch <- TermData{
+								Error: fmt.Sprintf("Bad data: %v", msg),
+							}
+							ws.Close()
+							return
+						}
 					}
 
 					// check for empty data
