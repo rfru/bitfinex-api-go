@@ -22,6 +22,10 @@ const (
 	WebSocketURL = "wss://api.bitfinex.com/ws/"
 )
 
+type httpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 // Client manages all the communication with the Bitfinex API.
 type Client struct {
 	// Base URL for API requests.
@@ -52,13 +56,15 @@ type Client struct {
 	History       *HistoryService
 	WebSocket     *WebSocketService
 	Wallet        *WalletService
+	httpClient    httpClient
 }
 
 // NewClient creates new Bitfinex.com API client.
-func NewClient() *Client {
+func NewClient(httpClient httpClient) *Client {
 	baseURL, _ := url.Parse(BaseURL)
 
 	c := &Client{BaseURL: baseURL, WebSocketURL: WebSocketURL}
+	c.httpClient = httpClient
 	c.Pairs = &PairsService{client: c}
 	c.Stats = &StatsService{client: c}
 	c.Account = &AccountService{client: c}
@@ -149,13 +155,9 @@ func (c *Client) Auth(key string, secret string) *Client {
 	return c
 }
 
-var httpDo = func(req *http.Request) (*http.Response, error) {
-	return http.DefaultClient.Do(req)
-}
-
 // Do executes API request created by NewRequest method or custom *http.Request.
 func (c *Client) do(req *http.Request, v interface{}) (*Response, error) {
-	resp, err := httpDo(req)
+	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
 		return nil, err

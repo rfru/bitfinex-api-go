@@ -303,13 +303,12 @@ func (w *WebSocketService) ConnectPrivate(ch chan TermData) {
 			var data []interface{}
 			err = json.Unmarshal(p, &data)
 			if err == nil {
-				if len(data) == 2 { // Heartbeat
+				dataTerm := data[1].(string)
+				if dataTerm == "hb" { // Heartbeat
 					// XXX: Consider adding a switch to enable/disable passing these along.
-					ch <- TermData{Term: data[1].(string)}
-					return
+					continue
 				}
 
-				dataTerm := data[1].(string)
 				dataList := data[2].([]interface{})
 
 				// check for empty data
@@ -338,6 +337,7 @@ func (w *WebSocketService) ConnectPrivate(ch chan TermData) {
 					Error: "Error connecting to private web socket channel.",
 				}
 				ws.Close()
+				return
 			}
 		}
 	}

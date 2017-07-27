@@ -128,10 +128,11 @@ func (s *OrderService) Cancel(orderID int64) error {
 
 // SubmitOrder is an order to be created on the bitfinex platform.
 type SubmitOrder struct {
-	Symbol string
-	Amount float64
-	Price  float64
-	Type   string
+	Symbol     string
+	Amount     float64
+	Price      float64
+	Type       string
+	IsPostOnly bool
 }
 
 // MultipleOrderResponse bundles orders returned by the CreateMulti method.
@@ -152,12 +153,13 @@ func (s *OrderService) CreateMulti(orders []SubmitOrder) (MultipleOrderResponse,
 			side = "buy"
 		}
 		ordersMap = append(ordersMap, map[string]interface{}{
-			"symbol":   order.Symbol,
-			"amount":   strconv.FormatFloat(order.Amount, 'f', -1, 32),
-			"price":    strconv.FormatFloat(order.Price, 'f', -1, 32),
-			"exchange": "bitfinex",
-			"side":     side,
-			"type":     order.Type,
+			"symbol":      order.Symbol,
+			"amount":      strconv.FormatFloat(order.Amount, 'f', -1, 32),
+			"price":       strconv.FormatFloat(order.Price, 'f', -1, 32),
+			"exchange":    "bitfinex",
+			"side":        side,
+			"type":        order.Type,
+			"is_postonly": order.IsPostOnly,
 		})
 	}
 
