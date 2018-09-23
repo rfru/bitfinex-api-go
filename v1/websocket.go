@@ -59,6 +59,7 @@ type subscribeMsg struct {
 	Channel string  `json:"channel"`
 	Pair    string  `json:"pair"`
 	ChanID  float64 `json:"chanId,omitempty"`
+	Length  string  `json:"len,omitempty"`
 }
 
 type subscribeToChannel struct {
@@ -117,11 +118,15 @@ func (w *WebSocketService) ClearSubscriptions() {
 
 func (w *WebSocketService) sendSubscribeMessages() error {
 	for _, s := range w.subscribes {
-		msg, _ := json.Marshal(subscribeMsg{
+		sM := subscribeMsg{
 			Event:   "subscribe",
 			Channel: s.Channel,
 			Pair:    s.Pair,
-		})
+		}
+		if s.Channel == ChanBook {
+			sM.Length = "100"
+		}
+		msg, _ := json.Marshal(sM)
 
 		err := w.ws.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
